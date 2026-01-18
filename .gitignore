@@ -1,0 +1,11 @@
+# Environment file with secrets
+.env
+
+# rclone config with OAuth tokens
+config/rclone.conf
+
+# Bisync state
+data/
+
+# Logs
+*.log

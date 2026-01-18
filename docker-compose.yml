@@ -1,0 +1,24 @@
+services:
+  gdrive-sync:
+    image: rclone/rclone:latest
+    container_name: gdrive-sync
+    restart: unless-stopped
+    entrypoint: /scripts/entrypoint.sh
+    environment:
+      - TZ=${TZ:-UTC}
+      - SYNC_INTERVAL=${SYNC_INTERVAL:-5}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - NOTIFY_EMAIL=${NOTIFY_EMAIL}
+    volumes:
+      # rclone config (contains OAuth tokens)
+      - ./config/rclone.conf:/config/rclone/rclone.conf:ro
+      # Exclude patterns
+      - ./config/excludes.txt:/config/excludes.txt:ro
+      # Scripts
+      - ./scripts/entrypoint.sh:/scripts/entrypoint.sh:ro
+      - ./scripts/sync.sh:/scripts/sync.sh:ro
+      # Documents folder to sync
+      - ${DOCUMENTS_PATH}:/data/documents
+      # Persistent bisync state (tracks file changes between runs)
+      - ./data/bisync:/root/.cache/rclone/bisync

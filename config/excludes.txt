@@ -1,0 +1,33 @@
+# Temporary files
+*.tmp
+*.temp
+~*
+.~lock.*
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+.directory
+
+# Version control
+.git/**
+.gitignore
+.gitattributes
+
+# SyncThing internals
+.stfolder
+.stfolder/**
+.stignore
+.stversions/**
+
+# Editor swap/backup files
+*.swp
+*.swo
+*~
+.*.swp
+
+# Common cache directories
+.cache/**
+__pycache__/**
+node_modules/**
