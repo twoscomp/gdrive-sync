@@ -4,8 +4,8 @@
 . /etc/environment 2>/dev/null || true
 
 LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
-LOCAL_PATH="/data/documents"
-REMOTE_PATH="gdrive:Documents"
+LOCAL_PATH="/data"
+REMOTE_PATH="gdrive:"
 EXCLUDE_FILE="/config/excludes.txt"
 
 # Function to send email via Gmail SMTP using curl

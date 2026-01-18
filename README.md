@@ -9,7 +9,7 @@ Bidirectional sync between a local folder and Google Drive using rclone bisync i
 - Conflict resolution: newest file wins
 - Email notifications on sync failure via Gmail SMTP
 - Excludes common temp files, OS metadata, and SyncThing internals
-- Skips Google-native documents (Docs, Sheets, Slides)
+- Google Docs/Sheets/Slides sync as clickable link files (.gdoc, .gsheet, .gslides)
 
 ## Prerequisites
 
@@ -83,8 +83,8 @@ TZ=America/Los_Angeles
 # Sync interval in minutes
 SYNC_INTERVAL=5
 
-# Path to your Documents folder
-DOCUMENTS_PATH=/mnt/tank/documents
+# Path to your local Google Drive folder
+GDRIVE_PATH=/path/to/gdrive
 
 # Gmail credentials for notifications
 GMAIL_USER=your-email@gmail.com
@@ -106,7 +106,7 @@ Before running the container, you must initialize bisync. This creates the basel
 
 **Option A: Initialize from local (local is authoritative)**
 ```bash
-docker compose run --rm gdrive-sync rclone bisync /data/documents gdrive:Documents \
+docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
     --resync \
     --resync-mode path1 \
@@ -115,7 +115,7 @@ docker compose run --rm gdrive-sync rclone bisync /data/documents gdrive:Documen
 
 **Option B: Initialize from Google Drive (remote is authoritative)**
 ```bash
-docker compose run --rm gdrive-sync rclone bisync /data/documents gdrive:Documents \
+docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
     --resync \
     --resync-mode path2 \
@@ -163,12 +163,12 @@ Default exclusions:
 - Version control: `.git/`
 - SyncThing: `.stfolder`, `.stignore`, `.stversions/`
 
-### Remote Path
+### Sync Paths
 
-The default remote path is `gdrive:Documents`. To change this, edit `scripts/sync.sh`:
+The default syncs your entire Google Drive root to `/data`. To sync a specific folder instead, edit `scripts/sync.sh`:
 
 ```bash
-REMOTE_PATH="gdrive:YourFolder"
+REMOTE_PATH="gdrive:Documents"  # Sync only the Documents folder
 ```
 
 ## Troubleshooting
@@ -195,7 +195,7 @@ Then copy the updated config to `config/rclone.conf`.
 If bisync detects too many changes or inconsistencies, it may require a resync:
 
 ```bash
-docker compose run --rm gdrive-sync rclone bisync /data/documents gdrive:Documents \
+docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
     --resync \
     --verbose
