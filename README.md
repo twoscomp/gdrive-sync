@@ -108,6 +108,7 @@ Before running the container, you must initialize bisync. This creates the basel
 ```bash
 docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
+    --exclude-from /config/excludes.txt \
     --resync \
     --resync-mode path1 \
     --verbose
@@ -117,6 +118,7 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
 ```bash
 docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
+    --exclude-from /config/excludes.txt \
     --resync \
     --resync-mode path2 \
     --verbose
@@ -197,6 +199,7 @@ If bisync detects too many changes or inconsistencies, it may require a resync:
 ```bash
 docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
+    --exclude-from /config/excludes.txt \
     --resync \
     --verbose
 ```
