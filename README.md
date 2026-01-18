@@ -77,6 +77,10 @@ cp .env.template .env
 Edit `.env` with your settings:
 
 ```bash
+# User/Group IDs for file ownership (run `id` to find yours)
+PUID=1000
+PGID=1000
+
 # Your timezone
 TZ=America/Los_Angeles
 
@@ -91,6 +95,8 @@ GMAIL_USER=your-email@gmail.com
 GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx
 NOTIFY_EMAIL=your-email@gmail.com
 ```
+
+Find your UID/GID by running `id` on your host system.
 
 ### 4. Create Gmail App Password
 
