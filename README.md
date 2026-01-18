@@ -106,7 +106,7 @@ Before running the container, you must initialize bisync. This creates the basel
 
 **Option A: Initialize from local (local is authoritative)**
 ```bash
-docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
+docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
     --resync \
     --resync-mode path1 \
@@ -115,7 +115,7 @@ docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
 
 **Option B: Initialize from Google Drive (remote is authoritative)**
 ```bash
-docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
+docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
     --resync \
     --resync-mode path2 \
@@ -195,7 +195,7 @@ Then copy the updated config to `config/rclone.conf`.
 If bisync detects too many changes or inconsistencies, it may require a resync:
 
 ```bash
-docker compose run --rm gdrive-sync rclone bisync /data gdrive: \
+docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --config /config/rclone/rclone.conf \
     --resync \
     --verbose
