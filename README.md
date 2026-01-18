@@ -83,8 +83,8 @@ TZ=America/Los_Angeles
 # Sync interval in minutes
 SYNC_INTERVAL=5
 
-# Path to your local Google Drive folder
-GDRIVE_PATH=/path/to/gdrive
+# Path to your local Google Drive folder (on host)
+LOCAL_PATH=/path/to/gdrive
 
 # Gmail credentials for notifications
 GMAIL_USER=your-email@gmail.com

@@ -18,7 +18,7 @@ services:
       # Scripts
       - ./scripts/entrypoint.sh:/scripts/entrypoint.sh:ro
       - ./scripts/sync.sh:/scripts/sync.sh:ro
-      # Google Drive sync folder
-      - ${GDRIVE_PATH}:/data
+      # Google Drive sync folder (host path from LOCAL_PATH)
+      - ${LOCAL_PATH}:/data
       # Persistent bisync state (tracks file changes between runs)
       - ./data/bisync:/root/.cache/rclone/bisync
