@@ -119,7 +119,6 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --drive-export-formats link.html \
     --drive-skip-dangling-shortcuts \
     --create-empty-src-dirs \
-    --rmdirs \
     --resync \
     --resync-mode path1 \
     --verbose
@@ -134,7 +133,6 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --drive-export-formats link.html \
     --drive-skip-dangling-shortcuts \
     --create-empty-src-dirs \
-    --rmdirs \
     --resync \
     --resync-mode path2 \
     --verbose
@@ -220,7 +218,6 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --drive-export-formats link.html \
     --drive-skip-dangling-shortcuts \
     --create-empty-src-dirs \
-    --rmdirs \
     --resync \
     --verbose
 ```

@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Load environment variables (for cron)
-. /etc/environment 2>/dev/null || true
-
 LOG_PREFIX="[$(date '+%Y-%m-%d %H:%M:%S')]"
 LOCAL_PATH="/data"
 REMOTE_PATH="gdrive:"
@@ -10,6 +7,12 @@ EXCLUDE_FILE="/config/excludes.txt"
 
 # Function to send email via Gmail SMTP using curl
 send_failure_email() {
+    # Check if curl is available
+    if ! command -v curl >/dev/null 2>&1; then
+        echo "${LOG_PREFIX} curl not available, skipping email notification"
+        return 0
+    fi
+
     ERROR_OUTPUT="$1"
     ERROR_CODE="$2"
     HOSTNAME=$(hostname)
@@ -60,7 +63,6 @@ RCLONE_CMD="rclone bisync ${LOCAL_PATH} ${REMOTE_PATH} \
     --drive-export-formats link.html \
     --drive-skip-dangling-shortcuts \
     --create-empty-src-dirs \
-    --rmdirs \
     --verbose"
 
 # Run bisync

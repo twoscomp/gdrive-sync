@@ -1,6 +1,6 @@
 services:
   gdrive-sync:
-    image: rclone/rclone:latest
+    build: .
     container_name: gdrive-sync
     restart: unless-stopped
     user: "${PUID:-1000}:${PGID:-1000}"
