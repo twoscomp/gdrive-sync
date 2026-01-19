@@ -18,8 +18,11 @@ desktop.ini
 # SyncThing internals
 .stfolder
 .stfolder/**
+.stfolder.removed-*
 .stignore
+.stversions
 .stversions/**
+.syncthing.*.tmp
 
 # Editor swap/backup files
 *.swp
