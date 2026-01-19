@@ -2,7 +2,7 @@
 .env
 
 # rclone config with OAuth tokens
-config/rclone.conf
+config/rclone/rclone.conf
 
 # Bisync state
 data/

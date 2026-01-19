@@ -66,7 +66,7 @@ After completing, copy the generated config:
 cat ~/.config/rclone/rclone.conf
 ```
 
-Copy the `[gdrive]` section to `config/rclone.conf`.
+Copy the `[gdrive]` section to `config/rclone/rclone.conf`.
 
 ### 3. Configure Environment
 
@@ -157,8 +157,9 @@ gdrive-sync/
 ├── .env                    # Your configuration (git-ignored)
 ├── .env.template           # Template for .env
 ├── config/
-│   ├── rclone.conf         # Your rclone config (git-ignored)
-│   ├── rclone.conf.template
+│   ├── rclone/             # rclone config directory (needs write access)
+│   │   ├── rclone.conf     # Your rclone config (git-ignored)
+│   │   └── rclone.conf.template
 │   └── excludes.txt        # Patterns to exclude from sync
 ├── scripts/
 │   ├── entrypoint.sh       # Container entrypoint (sets up cron)
@@ -204,7 +205,7 @@ If you see authentication errors, regenerate the OAuth token:
 rclone config reconnect gdrive:
 ```
 
-Then copy the updated config to `config/rclone.conf`.
+Then copy the updated config to `config/rclone/rclone.conf`.
 
 ### Resync Required
 
@@ -224,6 +225,6 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
 
 ## Security Notes
 
-- Keep `config/rclone.conf` and `.env` secure - they contain sensitive credentials
+- Keep `config/rclone/rclone.conf` and `.env` secure - they contain sensitive credentials
 - Add these to `.gitignore` if using version control
 - The Gmail App Password only works for SMTP and cannot access your full Google account

@@ -13,8 +13,8 @@ services:
       - NOTIFY_EMAIL=${NOTIFY_EMAIL}
       - XDG_CACHE_HOME=/cache
     volumes:
-      # rclone config (contains OAuth tokens, needs write access for token refresh)
-      - ./config/rclone.conf:/config/rclone/rclone.conf
+      # rclone config directory (needs write access for temp files and token refresh)
+      - ./config/rclone:/config/rclone
       # Exclude patterns
       - ./config/excludes.txt:/config/excludes.txt:ro
       # Scripts
