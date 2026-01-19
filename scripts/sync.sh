@@ -58,6 +58,7 @@ RCLONE_CMD="rclone bisync ${LOCAL_PATH} ${REMOTE_PATH} \
     --exclude-from ${EXCLUDE_FILE} \
     --conflict-resolve newer \
     --drive-export-formats link.html \
+    --drive-skip-dangling-shortcuts \
     --verbose"
 
 # Run bisync

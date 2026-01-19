@@ -117,6 +117,7 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --exclude-from /config/excludes.txt \
     --conflict-resolve newer \
     --drive-export-formats link.html \
+    --drive-skip-dangling-shortcuts \
     --resync \
     --resync-mode path1 \
     --verbose
@@ -129,6 +130,7 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --exclude-from /config/excludes.txt \
     --conflict-resolve newer \
     --drive-export-formats link.html \
+    --drive-skip-dangling-shortcuts \
     --resync \
     --resync-mode path2 \
     --verbose
@@ -212,6 +214,7 @@ docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \
     --exclude-from /config/excludes.txt \
     --conflict-resolve newer \
     --drive-export-formats link.html \
+    --drive-skip-dangling-shortcuts \
     --resync \
     --verbose
 ```
