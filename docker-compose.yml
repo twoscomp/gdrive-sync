@@ -11,6 +11,8 @@ services:
       - GMAIL_USER=${GMAIL_USER}
       - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
       - NOTIFY_EMAIL=${NOTIFY_EMAIL}
+      - MAX_FAILURES=${MAX_FAILURES:-10}
+      - MAX_BACKOFF_MINUTES=${MAX_BACKOFF_MINUTES:-60}
       - XDG_CACHE_HOME=/cache
     volumes:
       # rclone config directory (needs write access for temp files and token refresh)
