@@ -69,13 +69,32 @@ This typically happens when:
 
 Exit Code: ${ERROR_CODE} (resync required)
 
-To recover, run the following command to perform a fresh resync:
-  docker exec gdrive-sync rclone bisync /data gdrive: \\
+To recover, run one of the following commands:
+
+Local is authoritative (remote will match local):
+  docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \\
     --config /config/rclone/rclone.conf \\
-    --resync \\
+    --exclude-from /config/excludes.txt \\
+    --conflict-resolve newer \\
+    --drive-export-formats link.html \\
+    --drive-skip-dangling-shortcuts \\
+    --create-empty-src-dirs \\
+    --track-renames \\
+    --resync --resync-mode path1 \\
     --verbose
 
-WARNING: The --resync flag will make the remote match the local state.
+Remote is authoritative (local will match remote):
+  docker compose run --rm --entrypoint rclone gdrive-sync bisync /data gdrive: \\
+    --config /config/rclone/rclone.conf \\
+    --exclude-from /config/excludes.txt \\
+    --conflict-resolve newer \\
+    --drive-export-formats link.html \\
+    --drive-skip-dangling-shortcuts \\
+    --create-empty-src-dirs \\
+    --track-renames \\
+    --resync --resync-mode path2 \\
+    --verbose
+
 Review both sides before running if you're unsure which has the correct files.
 
 Error Output:

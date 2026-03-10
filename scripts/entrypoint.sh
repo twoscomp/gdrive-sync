@@ -7,8 +7,17 @@ MAX_FAILURES="${MAX_FAILURES:-10}"
 MAX_BACKOFF_MINUTES="${MAX_BACKOFF_MINUTES:-60}"
 MAX_BACKOFF_SECONDS=$((MAX_BACKOFF_MINUTES * 60))
 
-# State tracking
-export CONSECUTIVE_FAILURES=0
+# State tracking - persisted to survive container restarts
+STATE_FILE="/cache/rclone/bisync/.failure_count"
+CONSECUTIVE_FAILURES=0
+if [ -f "$STATE_FILE" ]; then
+    PERSISTED=$(cat "$STATE_FILE" 2>/dev/null)
+    case "$PERSISTED" in
+        ''|*[!0-9]*) ;;
+        *) CONSECUTIVE_FAILURES=$PERSISTED ;;
+    esac
+fi
+export CONSECUTIVE_FAILURES
 CURRENT_BACKOFF=$SYNC_INTERVAL_SECONDS
 
 echo "=== Google Drive Sync Container ==="
@@ -17,6 +26,7 @@ echo "Max failures before stop: ${MAX_FAILURES} (0=unlimited)"
 echo "Max back-off: ${MAX_BACKOFF_MINUTES} minutes"
 echo "Running as user: $(id)"
 echo "Starting at: $(date)"
+[ $CONSECUTIVE_FAILURES -gt 0 ] && echo "Resuming with ${CONSECUTIVE_FAILURES} persisted consecutive failure(s)"
 
 # Run sync loop
 while true; do
@@ -34,6 +44,7 @@ while true; do
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] Sync recovered after ${CONSECUTIVE_FAILURES} failure(s)"
         fi
         CONSECUTIVE_FAILURES=0
+        rm -f "$STATE_FILE"
         CURRENT_BACKOFF=$SYNC_INTERVAL_SECONDS
         SLEEP_TIME=$SYNC_INTERVAL_SECONDS
 
@@ -45,6 +56,7 @@ while true; do
     else
         # Non-critical failure - apply back-off
         CONSECUTIVE_FAILURES=$((CONSECUTIVE_FAILURES + 1))
+        echo "$CONSECUTIVE_FAILURES" > "$STATE_FILE"
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] Failure ${CONSECUTIVE_FAILURES}/${MAX_FAILURES}"
 
         # Check circuit breaker (if MAX_FAILURES > 0)
