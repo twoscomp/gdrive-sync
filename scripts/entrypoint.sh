@@ -9,6 +9,7 @@ MAX_BACKOFF_SECONDS=$((MAX_BACKOFF_MINUTES * 60))
 
 # State tracking - persisted to survive container restarts
 STATE_FILE="/cache/rclone/bisync/.failure_count"
+RESYNC_ATTEMPTS_FILE="/cache/rclone/bisync/.resync_attempts"
 CONSECUTIVE_FAILURES=0
 if [ -f "$STATE_FILE" ]; then
     PERSISTED=$(cat "$STATE_FILE" 2>/dev/null)
@@ -39,19 +40,50 @@ while true; do
     EXIT_CODE=$?
 
     if [ $EXIT_CODE -eq 0 ]; then
-        # Success - reset failure count and back-off
+        # Success - reset failure count, back-off, and resync attempts
         if [ $CONSECUTIVE_FAILURES -gt 0 ]; then
             echo "[$(date '+%Y-%m-%d %H:%M:%S')] Sync recovered after ${CONSECUTIVE_FAILURES} failure(s)"
         fi
         CONSECUTIVE_FAILURES=0
         rm -f "$STATE_FILE"
+        rm -f "$RESYNC_ATTEMPTS_FILE"
         CURRENT_BACKOFF=$SYNC_INTERVAL_SECONDS
         SLEEP_TIME=$SYNC_INTERVAL_SECONDS
 
     elif [ $EXIT_CODE -eq 7 ]; then
-        # Critical error requiring resync - stop container
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] CRITICAL: Exit code 7 - resync required. Stopping container."
-        exit 7
+        # Critical error requiring resync - attempt auto-resync before giving up
+        RESYNC_ATTEMPTS=0
+        [ -f "$RESYNC_ATTEMPTS_FILE" ] && RESYNC_ATTEMPTS=$(cat "$RESYNC_ATTEMPTS_FILE" 2>/dev/null)
+        case "$RESYNC_ATTEMPTS" in ''|*[!0-9]*) RESYNC_ATTEMPTS=0 ;; esac
+
+        if [ "$RESYNC_ATTEMPTS" -lt 2 ]; then
+            RESYNC_ATTEMPTS=$((RESYNC_ATTEMPTS + 1))
+            echo "$RESYNC_ATTEMPTS" > "$RESYNC_ATTEMPTS_FILE"
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-resync attempt ${RESYNC_ATTEMPTS}/2 (newer wins)..."
+            rclone bisync /data gdrive: \
+                --config /config/rclone/rclone.conf \
+                --exclude-from /config/excludes.txt \
+                --conflict-resolve newer \
+                --drive-export-formats link.html \
+                --drive-skip-dangling-shortcuts \
+                --create-empty-src-dirs \
+                --track-renames \
+                --resync --resync-mode newer \
+                --verbose
+            RESYNC_EXIT=$?
+            if [ $RESYNC_EXIT -eq 0 ]; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-resync succeeded, resuming normal sync"
+                rm -f "$RESYNC_ATTEMPTS_FILE"
+                CONSECUTIVE_FAILURES=0
+                rm -f "$STATE_FILE"
+            else
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] Auto-resync failed (exit ${RESYNC_EXIT}), will retry next cycle"
+            fi
+            SLEEP_TIME=$SYNC_INTERVAL_SECONDS
+        else
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] CRITICAL: Auto-resync failed twice. Stopping container."
+            exit 7
+        fi
 
     else
         # Non-critical failure - apply back-off

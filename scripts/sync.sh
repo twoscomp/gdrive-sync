@@ -157,6 +157,22 @@ RCLONE_CMD="rclone bisync ${LOCAL_PATH} ${REMOTE_PATH} \
 OUTPUT=$(${RCLONE_CMD} 2>&1)
 EXIT_CODE=$?
 
+# Auto-clear stale lock files and retry once
+if [ $EXIT_CODE -ne 0 ] && echo "${OUTPUT}" | grep -qi "lock"; then
+    LOCK_FILE=$(ls /cache/rclone/bisync/*.lck 2>/dev/null | head -1)
+    if [ -n "$LOCK_FILE" ]; then
+        LOCK_AGE=$(( $(date +%s) - $(stat -c %Y "$LOCK_FILE") ))
+        if [ $LOCK_AGE -gt 300 ]; then
+            echo "${LOG_PREFIX} Stale lock file detected (${LOCK_AGE}s old), removing and retrying..."
+            rm -f "$LOCK_FILE"
+            OUTPUT=$(${RCLONE_CMD} 2>&1)
+            EXIT_CODE=$?
+        else
+            echo "${LOG_PREFIX} Lock file is recent (${LOCK_AGE}s old), another process may be running"
+        fi
+    fi
+fi
+
 if [ $EXIT_CODE -eq 0 ]; then
     echo "${LOG_PREFIX} Sync completed successfully"
     echo "${OUTPUT}" | tail -20
