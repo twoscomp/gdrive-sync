@@ -34,3 +34,6 @@ desktop.ini
 .cache/**
 __pycache__/**
 node_modules/**
+
+# Syncthing conflict copies
+*.sync-conflict-*

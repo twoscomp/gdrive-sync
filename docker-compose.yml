@@ -2,7 +2,13 @@ services:
   gdrive-sync:
     build: .
     container_name: gdrive-sync
-    restart: unless-stopped
+    # The entrypoint parks itself on unrecoverable errors rather than exiting,
+    # so a restart here means a genuine crash. `unless-stopped` would turn the
+    # circuit breaker into a restart loop, since the failure count is persisted.
+    restart: on-failure:3
+    # Give an in-flight bisync time to close out cleanly on `docker stop`;
+    # a SIGKILL mid-run is what leaves the state dir needing a resync.
+    stop_grace_period: 120s
     user: "${PUID:-1000}:${PGID:-1000}"
     entrypoint: /scripts/entrypoint.sh
     environment:
@@ -13,6 +19,11 @@ services:
       - NOTIFY_EMAIL=${NOTIFY_EMAIL}
       - MAX_FAILURES=${MAX_FAILURES:-10}
       - MAX_BACKOFF_MINUTES=${MAX_BACKOFF_MINUTES:-60}
+      - MAX_DELETE_PERCENT=${MAX_DELETE_PERCENT:-90}
+      - CHECK_ACCESS=${CHECK_ACCESS:-true}
+      - CHECK_FILENAME=${CHECK_FILENAME:-RCLONE_TEST}
+      - BACKUP_DIR=${BACKUP_DIR:-/backup}
+      - SYNC_VERBOSE=${SYNC_VERBOSE:-false}
       - XDG_CACHE_HOME=/cache
     volumes:
       # rclone config directory (needs write access for temp files and token refresh)
@@ -26,3 +37,6 @@ services:
       - ${LOCAL_PATH}:/data
       # Persistent bisync state (tracks file changes between runs)
       - ./data/bisync:/cache/rclone/bisync
+      # Where locally-deleted/overwritten files are kept so a mass delete
+      # coming down from Drive is recoverable. Must NOT be inside LOCAL_PATH.
+      - ${BACKUP_PATH:-./data/backup}:/backup
