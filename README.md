@@ -129,7 +129,7 @@ itself disappearing. It does **not** catch a partial mass deletion that leaves
 the sentinel in place, which is exactly what a raised `MAX_DELETE_PERCENT`
 newly permits. And the fully-empty case — an unmounted dataset — is already
 caught by rclone's own `empty current Path1 listing` error with or without this
-flag. The real safety net is `BACKUP_PATH`, below.
+flag. For recovering from a bad delete, see [Recovering from a bad delete](#recovering-from-a-bad-delete).
 
 The sentinel is deliberately **root-only**. rclone suggests one per
 subdirectory, which would make `--check-access` far stricter — but it also makes
@@ -227,18 +227,41 @@ newly excluded stop being tracked but are not deleted from either side.
 | `MAX_DELETE_PERCENT` | `90` | Percentage of files that may disappear from one side in a single run before bisync aborts. rclone's own default is **50**, which is too low to ever rename or delete a folder containing more than half your files. |
 | `CHECK_ACCESS` | `true` | Require a sentinel file at the root of both sides. A narrow guard — see [step 5](#5-create-the-access-check-sentinel) for what it does and doesn't cover. |
 | `CHECK_FILENAME` | `RCLONE_TEST` | Name of that sentinel file. |
-| `BACKUP_PATH` / `BACKUP_DIR` | `./data/backup` → `/backup` | Where locally deleted or overwritten files are moved instead of destroyed. **This is the real protection against a mass delete.** Must not sit inside `LOCAL_PATH`. |
+| `BACKUP_DIR` | *(empty)* | Optional. Move locally deleted files here instead of destroying them. Off by default — see below. |
 | `MAX_FAILURES` | `10` | Consecutive failures before the container parks itself (`0` = unlimited). |
 | `MAX_BACKOFF_MINUTES` | `60` | Ceiling on the exponential back-off between retries. |
 | `SYNC_VERBOSE` | `false` | Pass `--verbose` to rclone. Very chatty on large drives. |
 
-#### Why deletions are backed up on the local side only
+#### Recovering from a bad delete
 
-The two directions are not equally recoverable. Files rclone deletes from Google
-Drive go to Drive's trash and are restorable for 30 days. Files it deletes
-locally are gone permanently — and because the local folder is a Syncthing
-share, that deletion propagates to every peer. `--backup-dir1` closes that gap.
-Prune `BACKUP_PATH` periodically; nothing rotates it for you.
+Raising `MAX_DELETE_PERCENT` means up to that share of one side can disappear in
+a single run. The two directions are not equally recoverable on their own:
+
+- **Google Drive side** — rclone deletes to Drive's trash, restorable for 30
+  days. Nothing extra needed.
+- **Local side** — rclone deletes are permanent, and because the local folder is
+  a Syncthing share the deletion propagates to every peer.
+
+For the local side, use whatever already snapshots that folder rather than
+`BACKUP_DIR`. On TrueNAS/ZFS a periodic snapshot task covers it, prunes itself
+on its retention schedule, and costs almost nothing because snapshots are
+copy-on-write. Restoring is a plain copy out of the snapshot:
+
+```bash
+ls /mnt/tank/your-folder/.zfs/snapshot/
+cp -a /mnt/tank/your-folder/.zfs/snapshot/auto-2026-09-21_03-05/SomeFolder \
+      /mnt/tank/your-folder/
+```
+
+The gap to know about: a file created *and* deleted between two snapshots is not
+in any of them. With daily snapshots that is a file less than a day old.
+Syncthing file versioning closes the same gap if you prefer.
+
+`BACKUP_DIR` exists for setups with no snapshots at all. It writes real copies,
+not references, and **nothing prunes it** — distinct paths accumulate forever,
+so you must clear it out yourself. To enable it, set `BACKUP_DIR=/backup` and
+uncomment the `/backup` volume in `docker-compose.yml`, pointing at a path
+outside `LOCAL_PATH`.
 
 When the container cannot continue safely it **parks**: it stays running, logs
 why, and stops syncing until you restart it. It does not exit, because a

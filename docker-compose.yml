@@ -22,7 +22,7 @@ services:
       - MAX_DELETE_PERCENT=${MAX_DELETE_PERCENT:-90}
       - CHECK_ACCESS=${CHECK_ACCESS:-true}
       - CHECK_FILENAME=${CHECK_FILENAME:-RCLONE_TEST}
-      - BACKUP_DIR=${BACKUP_DIR:-/backup}
+      - BACKUP_DIR=${BACKUP_DIR:-}
       - SYNC_VERBOSE=${SYNC_VERBOSE:-false}
       - XDG_CACHE_HOME=/cache
     volumes:
@@ -37,6 +37,6 @@ services:
       - ${LOCAL_PATH}:/data
       # Persistent bisync state (tracks file changes between runs)
       - ./data/bisync:/cache/rclone/bisync
-      # Where locally-deleted/overwritten files are kept so a mass delete
-      # coming down from Drive is recoverable. Must NOT be inside LOCAL_PATH.
-      - ${BACKUP_PATH:-./data/backup}:/backup
+      # Only if you set BACKUP_DIR=/backup (see .env.template) -- unnecessary
+      # when the local folder is already snapshotted:
+      # - ./data/backup:/backup

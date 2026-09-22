@@ -36,12 +36,14 @@ MAX_DELETE_PERCENT="${MAX_DELETE_PERCENT:-90}"
 CHECK_ACCESS="${CHECK_ACCESS:-true}"
 CHECK_FILENAME="${CHECK_FILENAME:-RCLONE_TEST}"
 
-# Where deleted/overwritten LOCAL files are moved instead of being destroyed.
-# This matters because the two directions are not equally recoverable: files
-# rclone deletes from Google Drive go to Drive's trash (30 days), but files it
-# deletes locally are gone for good -- and that loss fans out to every Syncthing
-# peer. Set empty to disable.
-BACKUP_DIR="${BACKUP_DIR:-/backup}"
+# Optional: move deleted/overwritten LOCAL files here instead of destroying
+# them. Off by default, because nothing prunes it -- distinct paths accumulate
+# forever, and the copies are real (not copy-on-write).
+#
+# Only worth setting if the local folder has no snapshots. If it lives on ZFS or
+# btrfs with a snapshot schedule, or Syncthing file versioning is on, that
+# already covers a mass delete, prunes itself, and costs far less space.
+BACKUP_DIR="${BACKUP_DIR:-}"
 
 SYNC_VERBOSE="${SYNC_VERBOSE:-false}"
 

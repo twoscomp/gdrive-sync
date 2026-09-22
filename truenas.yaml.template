@@ -22,7 +22,7 @@ services:
       - MAX_DELETE_PERCENT=90
       - CHECK_ACCESS=true
       - CHECK_FILENAME=RCLONE_TEST
-      - BACKUP_DIR=/backup
+      - BACKUP_DIR=
       - SYNC_VERBOSE=false
     user: '1000:1000'
     volumes:
@@ -34,4 +34,3 @@ services:
       - /mnt/newton/appdata/gdrive-sync/scripts/sync.sh:/scripts/sync.sh:ro
       - /mnt/newton/google-drive:/data
       - /mnt/newton/appdata/gdrive-sync/data/bisync:/cache/rclone/bisync
-      - /mnt/newton/gdrive-deleted:/backup
