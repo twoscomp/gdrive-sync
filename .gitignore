@@ -9,3 +9,6 @@ data/
 
 # Logs
 *.log
+
+# TrueNAS deployment file (contains Gmail app password in plain text)
+truenas.yaml

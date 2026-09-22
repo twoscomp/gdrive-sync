@@ -1,0 +1,37 @@
+# TrueNAS "Custom App" compose file.
+#
+# Copy to truenas.yaml and fill in the placeholders. truenas.yaml is
+# git-ignored because it holds your Gmail app password in plain text.
+services:
+  gdrive-sync:
+    build:
+      context: /mnt/newton/appdata/gdrive-sync
+    container_name: gdrive-sync
+    restart: on-failure:3
+    stop_grace_period: 120s
+    entrypoint: /scripts/entrypoint.sh
+    environment:
+      - TZ=America/Chicago
+      - SYNC_INTERVAL=5
+      - GMAIL_USER=CHANGEME@gmail.com
+      - GMAIL_APP_PASSWORD=CHANGEME
+      - NOTIFY_EMAIL=CHANGEME@gmail.com
+      - XDG_CACHE_HOME=/cache
+      - MAX_FAILURES=10
+      - MAX_BACKOFF_MINUTES=60
+      - MAX_DELETE_PERCENT=90
+      - CHECK_ACCESS=true
+      - CHECK_FILENAME=RCLONE_TEST
+      - BACKUP_DIR=/backup
+      - SYNC_VERBOSE=false
+    user: '1000:1000'
+    volumes:
+      - /mnt/newton/appdata/gdrive-sync/config/rclone:/config/rclone
+      - >-
+        /mnt/newton/appdata/gdrive-sync/config/excludes.txt:/config/excludes.txt:ro
+      - >-
+        /mnt/newton/appdata/gdrive-sync/scripts/entrypoint.sh:/scripts/entrypoint.sh:ro
+      - /mnt/newton/appdata/gdrive-sync/scripts/sync.sh:/scripts/sync.sh:ro
+      - /mnt/newton/google-drive:/data
+      - /mnt/newton/appdata/gdrive-sync/data/bisync:/cache/rclone/bisync
+      - /mnt/newton/gdrive-deleted:/backup
